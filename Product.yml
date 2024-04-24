@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  haproxy:
+    image: betamb.qmb.ir/docker/haproxy:Product
+    hostname: haproxy
+    environment:
+      - "TZ=UTC-3:30"
+    # labels:
+    #   - "collect_logs_with_filebeat=true"
+    #   - "decode_log_event_to_json_object=true"
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - node.labels.zone == dmz
+          # - node.labels.stage == product
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+    networks:
+      - proxy
+      - product
+      - preproduct
+      - testProduct
+    extra_hosts:
+      - "ib.qmb.ir:192.168.1.78"
+      - "portal.pbn.net:172.31.249.10"
+      - "services.pbn.net:172.31.249.10"
+      - "gateway-v3.mehrbank.apipart.ir:10.82.3.36"
+      - "payamad.asr24.com:185.57.164.131"
+      - "hbcloud.qmb.ir:10.82.1.48"
+      - "hamrahbank.qmb.ir:10.82.1.15"
+
+networks:
+  proxy:
+    name: proxy
+    external: true
+  product:
+    name: product   
+    external: true
+  testProduct:
+    name: testProduct
+    external: true
+  preproduct:
+    name: preproduct
+    external: true
